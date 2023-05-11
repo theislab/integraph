@@ -4,3 +4,5 @@ scipy
 igraph
 matplotlib
 sklearn
+seaborn
+numpy
