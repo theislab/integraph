@@ -6,3 +6,5 @@ matplotlib
 sklearn
 seaborn
 numpy
+PyComplexHeatmap
+git+https://github.com/DingWB/PyComplexHeatmap
