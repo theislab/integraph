@@ -1,0 +1,21 @@
+,source disease,closest disease
+G05073,COVID_HCW_MILD,COVID_SEV
+H00053,HV,HV
+H00054,HV,HV
+H00058,HV,HV
+H00064,HV,HV
+H00070,HV,HV
+H00072,HV,HV
+H00085,HV,HV
+N00006,Sepsis,HV
+N00007,Sepsis,HV
+N00012,Sepsis,Sepsis
+N00017,Sepsis,Sepsis
+N00021,Sepsis,Sepsis
+N00023,Sepsis,COVID_SEV
+N00024,Sepsis,Sepsis
+N00028,Sepsis,Sepsis
+N00029,Sepsis,Sepsis
+N00032,Sepsis,COVID_MILD
+N00033,Sepsis,Sepsis
+N00037,Sepsis,Sepsis
