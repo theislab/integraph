@@ -1,0 +1,8 @@
+/notebooks/.ipynb_checkpoints
+/analysis-checkpoint.ipynb
+/data
+/aggregated_patient_info
+/extras
+.DS_Store
+Pipfile
+Pipfile.lock
