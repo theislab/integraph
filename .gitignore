@@ -6,3 +6,6 @@
 .DS_Store
 Pipfile
 Pipfile.lock
+/extras
+/data.zip
+dara.zip

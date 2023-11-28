@@ -1,0 +1,16 @@
+seaborn
+pandas
+matplotlib
+anndata
+ipywidgets
+pynndescent
+snfpy
+PyComplexHeatmap
+leidenalg
+openpyxl
+scipy
+scanpy
+numpy
+umap
+sklearn
+igraph
