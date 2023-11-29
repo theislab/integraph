@@ -6,21 +6,21 @@ Current structure of the data is as follows:.<br>
 |data <br />
   |input <br />
     |complementary -> clinical variables are saved here <br />
-    |original -> all six modalities in form of h5ad files <br />
-|output <br />
-  |analysis_input -> for each method of feature transformation, save relevant information <br />
-    |maxabs <br />
-    |minmax <br />
-    |power <br />
-    |quant_N <br />
-    |quant_U <br />
-    |standard <br />
-    |wot -> The output of codes in notebooks predictions.ipynb and controls_and_contributions.ipynb are saved here, if no transformation was applied to the data <br />
-    |raw -> cell counts <br />
-  level1 <br />
-  |level2 <br />
-  |level3 <br />
-  |shared_info_74 -> contains a map from IDs to Names and vice versa. Contains a map of IDs to pseudobulks. Contains the name of the 74 patients and their diseases <br />
+    |original -> all six modalities in form of h5ad files <br />
+  |output <br />
+    |analysis_input -> for each method of feature transformation, save relevant information <br />
+      |maxabs <br />
+      |minmax <br />
+      |power <br />
+      |quant_N <br />
+      |quant_U <br />
+      |standard <br />
+      |wot -> The output of codes in notebooks predictions.ipynb and controls_and_contributions.ipynb are saved here, if no transformation was applied to the data <br />
+      |raw -> cell counts <br />
+    |level1 <br />
+    |level2 <br />
+    level3 <br />
+    |shared_info_74 -> contains a map from IDs to Names and vice versa. Contains a map of IDs to pseudobulks. Contains the name of the 74 patients and their diseases <br />
        
 ## pseudobulk
 *** This notebook should be the first to run! ***
