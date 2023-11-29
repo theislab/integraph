@@ -57,7 +57,7 @@ class MMAE(nn.Module):
      
         return latent_data, decoded_omics
 
-    def train_MMAE(self, train_loader, learning_rate=0.001, device=torch.device('cpu'), epochs=100):
+    def train_MMAE(self, train_loader, transform, level, learning_rate=0.001, device=torch.device('cpu'), epochs=100):
         optimizer = torch.optim.Adam(self.parameters(), lr=learning_rate)
         loss_fn = nn.MSELoss()
         loss_ls = []
@@ -91,10 +91,10 @@ class MMAE(nn.Module):
 
             #save the model every 10 epochs, used for feature extraction
             if (epoch+1) % 10 ==0:
-                torch.save(self, 'model/AE/model_{}.pkl'.format(epoch+1))
+                torch.save(self, '../model/AE/model_{}.pkl'.format(epoch+1))
 
         #draw the training loss curve
         plt.plot([i + 1 for i in range(epochs)], loss_ls)
         plt.xlabel('epochs')
         plt.ylabel('loss')
-        plt.savefig('result/AE_train_loss.png')
+        plt.savefig('../result-level'+ level + '/' + transform + '/AE_train_loss.png')

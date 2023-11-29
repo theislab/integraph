@@ -16,7 +16,7 @@ def setup_seed(seed):
     torch.manual_seed(seed)
     np.random.seed(seed)
 
-def work(data, in_feas, names, weights, lr=0.001, bs=32, epochs=100, device=torch.device('cpu'), mode=0, topn=100, num_omics = 246):
+def work(data, in_feas, names, weights, transform, level, lr=0.001, bs=32, epochs=100, device=torch.device('cpu'), mode=0, topn=100, num_omics = 246):
     #name of sample
     sample_name = data['Sample'].tolist()
     print("work", num_omics)
@@ -35,14 +35,14 @@ def work(data, in_feas, names, weights, lr=0.001, bs=32, epochs=100, device=torc
         mmae = autoencoder_model.MMAE(in_feas, latent_dim=100, weights=weights, num_omics=num_omics)
         mmae.to(device)
         mmae.train()
-        mmae.train_MMAE(train_loader, learning_rate=lr, device=device, epochs=epochs)
+        mmae.train_MMAE(train_loader, transform, level, learning_rate=lr, device=device, epochs=epochs)
         mmae.eval()       #before save and test, fix the variables
-        torch.save(mmae, 'model/AE/MMAE_model.pkl')
+        torch.save(mmae, '../model/AE/MMAE_model.pkl')
 
     #load saved model, used for reducing dimensions
     if mode == 0 or mode == 2:
         print('Get the latent layer output...')
-        mmae = torch.load('model/AE/MMAE_model.pkl')
+        mmae = torch.load('../model/AE/MMAE_model.pkl')
         omics = {}
         start = 0
         end = 0
@@ -56,13 +56,13 @@ def work(data, in_feas, names, weights, lr=0.001, bs=32, epochs=100, device=torc
         latent_df = pd.DataFrame(latent_data.detach().cpu().numpy())
         latent_df.insert(0, 'Sample', sample_name)
         #save the integrated data(dim=100)
-        latent_df.to_csv('result/latent_data.csv', header=True, index=False)
+        latent_df.to_csv('../result-level' + level + "/" + transform + '/latent_data.csv', header=True, index=False)
 
     print('Extract features...')
-    extract_features(data, in_feas, epochs, names, topn, num_omics)
+    extract_features(data, in_feas, epochs, names, transform, topn, num_omics)
     return
 
-def extract_features(data, in_feas, epochs, names, topn=100, num_omics = 246):
+def extract_features(data, in_feas, epochs, names, transform, topn=100, num_omics = 246):
 
     print("extract_features", num_omics)
 
@@ -94,7 +94,7 @@ def extract_features(data, in_feas, epochs, names, topn=100, num_omics = 246):
         epoch_ls.append(epochs)
     for epoch in tqdm(epoch_ls):
         #load model
-        mmae = torch.load('model/AE/model_{}.pkl'.format(epoch))
+        mmae = torch.load('../model/AE/model_{}.pkl'.format(epoch))
         #get model variables
         model_dict = mmae.state_dict()
 
@@ -120,7 +120,7 @@ def extract_features(data, in_feas, epochs, names, topn=100, num_omics = 246):
         for i in range(num_omics):
             topn_omics[i][col_name] = fea_omics_top[i] 
             #all of top N features
-            topn_omics[i].to_csv('result/topn_omics_'+ names[i] +'.csv', header=True, index=False)
+            topn_omics[i].to_csv('../result-level' + level + "/" + transform + '/topn_omics_'+ names[i] +'.csv', header=True, index=False)
        
 
     
@@ -138,7 +138,8 @@ if __name__ == '__main__':
     parser.add_argument('--latent', '-l', type=int, default=100, help='The latent layer dim, default: 100.')
     parser.add_argument('--device', '-d', type=str, choices=['cpu', 'gpu', 'mps'], default='cpu', help='Training on cpu, mps or gpu, default: cpu.')
     parser.add_argument('--topn', '-n', type=int, default=100, help='Extract top N features every 10 epochs, default: 100.')
-    parser.add_argument('--level', '-lev', type=str, choices=['1', '2', '3', '4', '5'], default='1', help='Level of aggregation. Level 5 is negative control.')
+    parser.add_argument('--level', '-lev', type=str, choices=['1', '2', '3', '5'], default='1', help='Level of aggregation. Level 5 is negative control.')
+    parser.add_argument('--transform', '-tr', type=str, default='', help='Where to store the output.')
     args = parser.parse_args()
 
 
@@ -146,9 +147,10 @@ if __name__ == '__main__':
     omics_data = []
     names = {}
     i = 0
-    for filename in os.listdir(args.path):
+    read_path = os.path.join(args.path, args.transform)
+    for filename in os.listdir(read_path):
         if not filename == ".DS_Store":
-            data_path = os.path.join(args.path, filename)
+            data_path = os.path.join(read_path, filename)
             omics_data.append(pd.read_csv(data_path, header=0, index_col=None))
             names[i] = filename
             i+=1
@@ -242,9 +244,9 @@ if __name__ == '__main__':
             weights.append(1/6)
     
     
-    print(len(names), weights)
    
     #train model, reduce dimensions and extract features
-    work(Merge_data, in_feas, names, weights, lr=args.learningrate, bs=args.batchsize, epochs=args.epoch, device=device, mode=args.mode, topn=args.topn, num_omics = len(weights))
+    work(Merge_data, in_feas, names, weights, transform = args.transform, level= args.level, lr=args.learningrate, bs=args.batchsize, epochs=args.epoch, device=device, mode=args.mode, topn=args.topn, num_omics = len(weights))
     print('Success! Results can be seen in result file')
     print(names)
+

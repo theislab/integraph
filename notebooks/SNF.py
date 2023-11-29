@@ -23,15 +23,18 @@ if __name__ == '__main__':
                         help='(0, N) int, number of neighbors to consider when creating affinity matrix. See Notes of :py:func snf.compute.affinity_matrix for more details. Default: 20.')
     parser.add_argument('--mu', '-mu', type=float, default=0.5,
                         help='(0, 1) float, Normalization factor to scale similarity kernel when constructing affinity matrix. See Notes of :py:func snf.compute.affinity_matrix for more details. Default: 0.5.')
+    parser.add_argument('--transform', '-tr', type=str, default='', help='Where to save the output (name of the transformation applied).')
+    parser.add_argument('--level', '-lev', type=str, default='', help='Level.')
     args = parser.parse_args()
 
     print('Load data files...')
     omics_data = []
     names = {}
     i = 0
-    for filename in os.listdir(args.path):
+    read_path = os.path.join(args.path, args.transform)
+    for filename in os.listdir(read_path):
         if not filename == ".DS_Store":
-            data_path = os.path.join(args.path, filename)
+            data_path = os.path.join(read_path, filename)
             omics_data.append(pd.read_csv(data_path, header=0, index_col=None))
             names[i] = filename
             i+=1
@@ -50,7 +53,7 @@ if __name__ == '__main__':
     print('Start similarity network fusion...')
 
     affinity_nets = snf.make_affinity([omic.iloc[:, 1:].values.astype("float64") for omic in omics_data],
-                                      metric=args.metric, K=args.K, mu=args.mu)
+                                      metric=args.metric, K=args.K, mu=args.mu, normalize=False)
 
     fused_net =snf.snf(affinity_nets, K=args.K, t= 40)
 
@@ -58,9 +61,11 @@ if __name__ == '__main__':
     fused_df = pd.DataFrame(fused_net)
     fused_df.columns = omics_data[1]['Sample'].tolist()
     fused_df.index = omics_data[1]['Sample'].tolist()
-    fused_df.to_csv('result/SNF_fused_matrix.csv', header=True, index=True)
+    fused_df.to_csv('../result-level' + args.level + '/' + args.transform + '/SNF_fused_matrix.csv', header=True, index=True)
+
+
 
     np.fill_diagonal(fused_df.values, 0)
     fig = sns.clustermap(fused_df.iloc[:, :], cmap='vlag', figsize=(8,8),)
-    fig.savefig('result/SNF_fused_clustermap.png', dpi=300)
+    fig.savefig('../result-level' + args.level + '/' + args.transform  + '/SNF_fused_clustermap.png', dpi=300)
     print('Success! Results can be seen in result file')

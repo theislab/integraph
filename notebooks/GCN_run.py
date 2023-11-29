@@ -15,6 +15,7 @@ import torch.nn.functional as F
 from gcn_model import GCN
 from utils import load_data
 from utils import accuracy
+import pickle
 
 def setup_seed(seed):
     torch.manual_seed(seed)
@@ -75,7 +76,7 @@ def test(features, adj, labels, idx_test):
     #return accuracy and f1 score
     return acc_test.item(), f
 
-def predict(features, adj, sample, idx):
+def predict(features, adj, sample, idx, transform):
     '''
     :param features: the omics features
     :param adj: the laplace adjacency matrix
@@ -93,7 +94,7 @@ def predict(features, adj, sample, idx):
     res_data = res_data.iloc[idx,:]
     #print(res_data)
 
-    res_data.to_csv('result/GCN_predicted_data.csv', header=True, index=False)
+    res_data.to_csv('result/' + transform + '/GCN_predicted_data.csv', header=True, index=False)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -115,6 +116,9 @@ if __name__ == '__main__':
     parser.add_argument('--threshold', '-t', type=float, default=0.005, help='Threshold to filter edges, default: 0.005')
     parser.add_argument('--nclass', '-nc', type=int, default=6, help='Number of classes, default: 6')
     parser.add_argument('--patience', '-p', type=int, default=20, help='Patience')
+    parser.add_argument('--transform', '-tr', type=str, default="", help='Where to save the data.')
+    parser.add_argument('--prefix', '-pr', type=str, default="", help='Disease or Disease Group.')
+    parser.add_argument('--output_dict', '-od', type=str, default="", help='Dictionary.')
     args = parser.parse_args()
 
     # Check whether GPUs are available
@@ -163,6 +167,16 @@ if __name__ == '__main__':
             f1_res.append(f1)
 
         print('10-fold  Acc(%.4f, %.4f)  F1(%.4f, %.4f)' % (np.mean(acc_res), np.std(acc_res), np.mean(f1_res), np.std(f1_res)))
+
+        with open(args.output_dict, 'rb') as f:
+            module_analysis = pickle.load(f)
+
+        module_analysis["MoGCN"][args.prefix + "_acc"] = round(np.mean(acc_res),4)
+        module_analysis["MoGCN"][args.prefix + "_F1"] = round(np.mean(f1_res),4)
+
+        with open(args.output_dict, 'wb') as f:
+            pickle.dump(module_analysis, f)
+
         #predict(features, adj, data['Sample'].tolist(), data.index.tolist())
 
     elif args.mode == 1:
@@ -217,6 +231,6 @@ if __name__ == '__main__':
         print('Training finished.')
         print('The best epoch model is ',best_epoch)
         GCN_model.load_state_dict(torch.load('model/GCN/{}.pkl'.format(best_epoch)))
-        predict(features, adj, all_sample, test_idx)
+        predict(features, adj, all_sample, test_idx, args.transform)
 
     print('Finished!')
